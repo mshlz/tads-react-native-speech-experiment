@@ -1,13 +1,55 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import * as React from 'react';
+import { View, StyleSheet, Button, Picker, TextInput, Text } from 'react-native';
+import * as Speech from 'expo-speech';
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  const [text, setText] = React.useState('Mateus')
+  const [language, setLanguage] = React.useState<string | undefined>()
+  const [voices, setVoices] = React.useState<Speech.Voice[]>([])
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    (async () => {
+      const availableVoices = await Speech.getAvailableVoicesAsync()
+      setVoices(availableVoices)
+      setLanguage(availableVoices[0].language)
+      setLoading(false)
+    })()
+  }, [])
+
+
+  const speak = () => {
+    Speech.speak(text, { language });
+  };
+
+  return !loading
+    ? (
+      <View style={styles.container}>
+        <Text>Language:</Text>
+        <Picker
+          style={styles.input}
+          selectedValue={language}
+          onValueChange={value => setLanguage(value)}
+        >
+          {voices.map(lang =>
+            <Picker.Item label={lang.name} value={lang.language} />
+          )}
+        </Picker>
+
+        <Text>Something to say:</Text>
+        <TextInput
+          style={styles.input}
+          value={text}
+          onChangeText={value => setText(value)}
+        />
+
+        <Button
+          title="Press to hear"
+          onPress={speak}
+        />
+      </View>
+    )
+    : <>Carregando...</>;
 }
 
 const styles = StyleSheet.create({
@@ -16,5 +58,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
   },
 });
