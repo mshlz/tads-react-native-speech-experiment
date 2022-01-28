@@ -4,7 +4,7 @@ import * as Speech from 'expo-speech';
 
 export default function App() {
   const [text, setText] = React.useState('Mateus')
-  const [language, setLanguage] = React.useState<string | undefined>()
+  const [voice, setVoice] = React.useState<Speech.Voice | undefined>()
   const [voices, setVoices] = React.useState<Speech.Voice[]>([])
   const [loading, setLoading] = React.useState(true)
 
@@ -12,14 +12,13 @@ export default function App() {
     (async () => {
       const availableVoices = await Speech.getAvailableVoicesAsync()
       setVoices(availableVoices)
-      setLanguage(availableVoices[0].language)
+      setVoice(availableVoices[0])
       setLoading(false)
     })()
   }, [])
 
-
   const speak = () => {
-    Speech.speak(text, { language });
+    Speech.speak(text, { language: voice?.language, voice: voice?.identifier });
   };
 
   return !loading
@@ -28,11 +27,11 @@ export default function App() {
         <Text>Language:</Text>
         <Picker
           style={styles.input}
-          selectedValue={language}
-          onValueChange={value => setLanguage(value)}
+          selectedValue={voice?.identifier}
+          onValueChange={value => setVoice(voices.find(v => v.identifier == value))}
         >
-          {voices.map(lang =>
-            <Picker.Item label={lang.name} value={lang.language} />
+          {voices.map(v =>
+            <Picker.Item label={v.name} value={v.identifier} />
           )}
         </Picker>
 
